@@ -56,25 +56,25 @@ Test server
 - Create new database: basic_blog
 
 ```mysql
-mysql> create database basic_blog charset utf8;
+mysql> CREATE DATABASE basic_blog CHARSET utf8;
 ```
 
 - Create new user for database: itheima
 
 ```mysql
-mysql> create user itheima identified by '123456';
+mysql> CREATE USER itheima identified BY '123456';
 ```
 
 - Authorize the 'itheima' to access the 'basic_blog'
 
 ```mysql
-mysql> grant all on basic_blog.* to 'itheima'@'%';
+mysql> GRANT ALL ON basic_blog.* TO 'itheima'@'%';
 ```
 
 - refresh
 
 ```mysql
-mysql> flush privileges;
+mysql> FLUSH PRIVILEGES;
 ```
 
 - modify the blog > blog > blog > settings.py
@@ -298,4 +298,94 @@ modify `templates/register.html`
     <script type="text/javascript" src="{% static 'js/vue-2.5.16.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/axios-0.18.0.min.js' %}"></script>
 ```
+
+### Authorization
+
+#### Define user model
+
+ `users->models.py`
+
+```python
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    # phone number
+    mobile = models.CharField(max_length=11, unique=True, blank=False)
+    # avatar, ImageField need pip install Pillow first.
+    avatar = models.ImageField(upload_to='avatar/%Y%m%d/', blank=True)
+    # description
+    user_desc = models.CharField(max_length=500, blank=True)
+
+class Meta:
+    db_table = 'tb_users'   # modify name of table
+    verbose_name = 'User Management'
+    verbose_name_plural = verbose_name  # admin backstage display
+
+def __str__(self):
+    return self.mobile
+```
+
+#### Specified user model class
+
+`setting.py`, add
+
+```python
+# Replace the 'User' of system, and use our own defined 'User'
+# 'sub app's name.model class'
+AUTH_USER_MODEL = 'users.User' 
+```
+
+#### Generate migration file
+
+```shell
+(blog)$ python manage.py makemigrations
+```
+
+> Migrations for 'users':
+>   users/migrations/0001_initial.py
+>     - Create model User
+
+If error occurs, maybe you should insatll pillow
+
+```shell
+(blog)$ pip install Pillow
+```
+
+#### Execute migration
+
+```shell
+(blog)$ python manage.py migrate
+```
+
+#### check MySQL table
+
+- Open the MySQL
+
+```shell
+mysql -u root -p
+```
+
+- Show tables
+
+```mysql
+mysql> SHOW TABLES;
+```
+
+> +-----------------------------+
+> | Tables_in_basic_blog        |
+> +-----------------------------+
+> | auth_group                  |
+> | auth_group_permissions      |
+> | auth_permission             |
+> | django_admin_log            |
+> | django_content_type         |
+> | django_migrations           |
+> | django_session              |
+> | users_user                  |
+> | users_user_groups           |
+> | users_user_user_permissions |
+> +-----------------------------+
+> 10 rows in set (0.001 sec)
+
+- show tb_users.
 
