@@ -1,11 +1,12 @@
 import re
 import logging
 from random import randint
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.http.response import HttpResponseBadRequest, HttpResponse, JsonResponse
 from django_redis import get_redis_connection
 from django.db import DatabaseError
+from django.urls import reverse
 from libs.captcha.captcha import captcha
 from libs.yuntongxun.sms import CCP
 from utils.response_code import RETCODE
@@ -55,8 +56,9 @@ class RegisterView(View):
             logger.error(e)
             return HttpResponseBadRequest('注册失败')
         # 4.返回响应跳转到制定页面
-        # 暂时返回一个注册成功的信息，后期再实现跳转到制定页面
-        return HttpResponse('注册成功，重定向到首页')
+        # redirect 进行重定向
+        # reverse 可以通过namespace:name来获取视图对应的路由
+        return redirect(reverse('home:index'))
 
 
 class ImageCodeView(View):
