@@ -1,13 +1,14 @@
 import re
 import logging
 from random import randint
+from urllib import response
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http.response import HttpResponseBadRequest, HttpResponse, JsonResponse
 from django_redis import get_redis_connection
 from django.db import DatabaseError
 from django.urls import reverse
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from libs.captcha.captcha import captcha
 from libs.yuntongxun.sms import CCP
 from utils.response_code import RETCODE
@@ -177,3 +178,16 @@ class LoginView(View):
 
         # 7.返回响应
         return response
+
+
+class LogoutView(View):
+
+    def get(self, request):
+        # 1.session数据清除
+        logout(request)
+        # 2.删除部分cookie数据
+        response = redirect(reverse('home:index'))
+        response.delete_cookie('is_login')
+        # 3.跳转到首页
+        return response
+        
